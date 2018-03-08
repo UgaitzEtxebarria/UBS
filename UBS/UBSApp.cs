@@ -2,88 +2,93 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using UBSApp.Managers.CommunicationManager;
+using UBSApp.Forms;
+using UBSApp.Managers.ModuleManager;
+using UBSApp.Managers.ConfigManager;
+using UBSLib;
 
 namespace UBSApp
 {
-    public class UBSApp : CSRAppComponent
+    public class UBSApp : UBSAppComponent
     {
         ///////////////////////////////////////////////////////////
-        private CSRFormContainer form_container;
-        private ModuleManager module_manager;
+        private UBSFormContainer form_container;
+        private UBSModuleManager module_manager;
         private CommunicationManager communication_manager;
 
         private string config_filename = "config.xml";
-        private CSRAppComponentFunctions module_functions;
+        private UBSAppComponentFunctions module_functions;
 
         ///////////////////////////////////////////////////////////
         public UBSApp(DateTime fechaInicio) : base("root")
         {
             // Init Global config manager
-            config.global.GlobalConfigManager.Init();
+            GlobalConfigManager.Init();
 
             //Cargar el modo debug
             try
             {
                 if (File.Exists("Debug.txt"))
-                    config.global.GlobalConfigManager.SetParameter("Debug", Convert.ToBoolean(File.ReadAllText("Debug.txt")));
+                    GlobalConfigManager.SetParameter("Debug", Convert.ToBoolean(File.ReadAllText("Debug.txt")));
                 else
-                    config.global.GlobalConfigManager.SetParameter("Debug", false);
+                    GlobalConfigManager.SetParameter("Debug", false);
             }
             catch (Exception e)
             {
-                Error("Error al abrir el archivo del modo depuración. Revisa el fichero Debug.txt, debe de contener únicamente el valor \"true\" o \"false\".", true);
-                config.global.GlobalConfigManager.SetParameter("Debug", false);
+                Error("Error al abrir el archivo del modo depuración. Revisa el fichero Debug.txt, debe de contener únicamente el valor \"true\" o \"false\". " + e.Message, true);
+                GlobalConfigManager.SetParameter("Debug", false);
             }
 
             //[Debug] Cargar el escritor de tiempos de ejecución.
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
             {
-                CSRExecutionTimeWriter.Instance.Init(fechaInicio, "", "ExecutionTime.log", true);
+                UBSExecutionTimeLogger.Instance.Init(fechaInicio, "", "ExecutionTime.log", true);
                 WriteExecutionTime("Iniciacion del programa ", fechaInicio);
             }
             #endregion
 
-            // Get CSR version
+            // Get UBS version
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-            string CSRversion = fvi.FileVersion;
+            string UBSversion = fvi.FileVersion;
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
-                WriteExecutionTime("Version del CSR cargada");
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
+                WriteExecutionTime("Version del UBS cargada");
             #endregion
 
             // Init logger
-            CSRLogger.Instance.Init("CSR " + CSRversion, "CSR.log", Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")));
+            UBSLogger.Instance.Init("UBS " + UBSversion, "UBS.log", Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")));
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Logger inicializado");
             #endregion
 
             // Load config
-            config.AppConfig app_config;
-            config.AppConfigLoader loader = new config.AppConfigLoader(config_filename);
+            AppConfig app_config;
+            AppConfigLoader loader = new AppConfigLoader(config_filename);
             if (!loader.Load(out app_config))
                 Error("Error en la carga del fichero de configuración. [" + config_filename + "]", true);
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
-                WriteExecutionTime("Configuracion del CSR cargada");
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
+                WriteExecutionTime("Configuracion del UBS cargada");
             #endregion
 
             //Save dummy Config
             /*app_config = new config.AppConfig();
             app_config.isMinimized = false;
-            app_config.AppName = "CSR Dummy";
+            app_config.AppName = "UBS Dummy";
             app_config.AppSize = new System.Drawing.Size(600, 800);
             System.Collections.Generic.Dictionary<string, config.ModuleInfo> aux = new System.Collections.Generic.Dictionary<string, config.ModuleInfo>();
             config.ModuleInfoLocal mi = new config.ModuleInfoLocal();
             mi.Id = "LocMod";
             mi.Name = "LocalModule";
             mi.Filename = "LocMod.dll";
-            mi.ModuleType = "csr.modules.CSRPageModule";
+            mi.ModuleType = "modules.UBSPageModule";
             aux.Add(mi.Id, mi);
             mi.Id += 1;
             aux.Add(mi.Id + 1, mi);
@@ -91,7 +96,7 @@ namespace UBSApp
             miRemoto.Id = "RemMod";
             miRemoto.Name = "RemoteModule";
             miRemoto.Filename = "RemMod.dll";
-            miRemoto.ModuleType = "csr.modules.CSRPageModule";
+            miRemoto.ModuleType = "modules.UBSPageModule";
             miRemoto.Ip = "192.168.10.10";
             aux.Add(miRemoto.Id, miRemoto);
             miRemoto.Id += 2;
@@ -100,12 +105,12 @@ namespace UBSApp
             loader.Save(app_config);*/
 
             // Load modules
-            module_manager = new ModuleManager(app_config);
+            module_manager = new UBSModuleManager(app_config);
             if (!module_manager.LoadModules())
                 Error("Algunos módulos no se han podido cargar correctamente", true);
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Módulos cargados");
             #endregion
 
@@ -115,21 +120,21 @@ namespace UBSApp
             communication_manager.EnableLocalModules(module_manager.GetLocalModules());
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Comunicaciones cargadas");
             #endregion
 
             // Load Container Form
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            form_container = new CSRFormContainer();
-            form_container.Text = "CSR " + CSRversion + " :: " + app_config.AppName;
+            form_container = new UBSFormContainer();
+            form_container.Text = "UBS " + UBSversion + " :: " + app_config.AppName;
 
             //Set the Form Size
             if (app_config.AppSize.Height == 0 && app_config.AppSize.Height == 0)// Full screen
             {
                 //Si el modo debug está activo que la pantalla no sea completa del todo
-                if (!Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+                if (!Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 {
                     form_container.FormBorderStyle = FormBorderStyle.None;
                     form_container.WindowState = FormWindowState.Maximized;
@@ -144,29 +149,29 @@ namespace UBSApp
                 form_container.WindowState = FormWindowState.Minimized;
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Formularios cargados");
             #endregion
 
             // Append ConsoleWrite delegate
-            CSRStatusFunctions.Instance.SetConsoleWriteDelegate(form_container.WriteConsole);
-            CSRStatusFunctions.Instance.SetModuleErrorDelegate(form_container.ModuleError);
-            CSRStatusFunctions.Instance.SetModuleConnectionDelegate(form_container.ModuleConnection);
+            UBSStatusFunctions.Instance.SetConsoleLoggerDelegate(form_container.WriteConsole);
+            UBSStatusFunctions.Instance.SetModuleErrorDelegate(form_container.ModuleError);
+            UBSStatusFunctions.Instance.SetModuleConnectionDelegate(form_container.ModuleConnection);
 
             // Append delegates
-            module_functions = new CSRAppComponentFunctions();
-            csr.modules.CSRModuleDelegates module_delegates = new csr.modules.CSRModuleDelegates
+            module_functions = new UBSAppComponentFunctions();
+            UBSModuleDelegates module_delegates = new UBSModuleDelegates
                 (
                 communication_manager.SendMessage,
                 module_manager.GetAvailableModuleNames,
                 module_manager.GetLocalModules,
                 module_functions.Log,
-                module_functions.ConsoleWrite,
+                module_functions.WriteConsole,
                 module_functions.Notify,
                 module_functions.Error,
                 module_functions.WriteExecutionTime,
-                config.global.GlobalConfigManager.SetParameter,
-                config.global.GlobalConfigManager.GetParameter,
+                GlobalConfigManager.SetParameter,
+                GlobalConfigManager.GetParameter,
                 form_container.GoToModule,
                 form_container.ButtonColor
                 );
@@ -174,18 +179,18 @@ namespace UBSApp
             module_manager.AppendDelegates(module_delegates);
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Delegados asociados");
             #endregion
 
             // Initialization of global parameters
-            config.global.GlobalConfigManager.SetParameter("Communication", "message");
+            GlobalConfigManager.SetParameter("Communication", "message");
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Parametros globales cargados");
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
-                WriteExecutionTime("CSR Constructor OK");
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
+                WriteExecutionTime("UBS Constructor OK");
             #endregion
 
         }
@@ -194,8 +199,8 @@ namespace UBSApp
         public bool Init()
         {
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
-                WriteExecutionTime("Inicio de la inicialización del CSR");
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
+                WriteExecutionTime("Inicio de la inicialización del UBS");
             #endregion
 
             // Add module data to status
@@ -203,7 +208,7 @@ namespace UBSApp
                 form_container.AddModuleToStatus(module_id, module_manager.GetAvailableModuleNames()[module_id]);
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Añadidos los módulos al módulo Status");
             #endregion
 
@@ -213,7 +218,7 @@ namespace UBSApp
             form_container.AttachModules(module_manager.GetLocalModules());
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Módulos inicializados");
             #endregion
 
@@ -222,13 +227,13 @@ namespace UBSApp
                 Error("La counicación no se ha podido iniciar correctamente.", true);
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Comunicaciones inicializadas");
             #endregion
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
-                WriteExecutionTime("CSR Inicialización OK");
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
+                WriteExecutionTime("UBS Inicialización OK");
             #endregion
 
             return true;
@@ -238,7 +243,7 @@ namespace UBSApp
         public bool Destroy()
         {
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Programa cerrándose");
             #endregion
 
@@ -250,14 +255,14 @@ namespace UBSApp
             }
 
             #region ExecutionTime
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Programa cerrado.");
             #endregion
 
             Log("Todos los módulos cerrados correctamente.");
 
-            CSRExecutionTimeWriter.Instance.Close();
-            CSRLogger.Instance.Close();
+            UBSExecutionTimeLogger.Instance.Close();
+            UBSLogger.Instance.Close();
 
             return true;
         }
@@ -266,7 +271,7 @@ namespace UBSApp
         {
             #region ExecutionTime
             //[Debug] Guardar en el fichero el tiempo tardado en cargar e inicializar los modulos. 
-            if (Convert.ToBoolean(config.global.GlobalConfigManager.GetParameter("Debug")))
+            if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
                 WriteExecutionTime("Carga e inicialización finalizadas.");
             #endregion
 
@@ -277,7 +282,7 @@ namespace UBSApp
             }
             catch (Exception e)
             {
-                Error("Error general del CSR. " + e.Message, true, false);
+                Error("Error general del UBS. " + e.Message, true, false);
             }
         }
 

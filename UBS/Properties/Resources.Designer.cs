@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace UBS.Properties
+namespace UBSApp.Properties
 {
 
 

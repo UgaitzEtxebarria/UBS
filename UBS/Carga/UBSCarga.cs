@@ -25,7 +25,7 @@ namespace UBSApp.Carga
                 return;
 
             MySplashThread = new Thread(new ThreadStart(UBSCarga.ShowThread));
-            MySplashThread.Name = "CSR Carga";
+            MySplashThread.Name = "UBS Carga";
             MySplashThread.IsBackground = true;
             MySplashThread.SetApartmentState(ApartmentState.STA);
             MySplashThread.Start();

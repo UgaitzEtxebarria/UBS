@@ -33,6 +33,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -42,10 +43,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SerializationInfo\ModuleInfoRemote.cs" />
+    <Compile Include="SerializationInfo\ModuleInfoLocal.cs" />
+    <Compile Include="SerializationInfo\ModuleInfo.cs" />
     <Compile Include="UBSModuleDelegates.cs" />
     <Compile Include="UBSModule.cs" />
     <Compile Include="UBSModuleMessage.cs" />
     <Compile Include="UBSModuleStatus.cs" />
+    <Compile Include="UBSBackgroundModule.cs" />
     <Compile Include="UBSVisualModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

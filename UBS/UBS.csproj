@@ -49,6 +49,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,6 +61,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\UBSFormContainer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\UBSFormContainer.Designer.cs">
+      <DependentUpon>UBSFormContainer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UBSModuleStatusControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UBSModuleStatusControl.Designer.cs">
+      <DependentUpon>UBSModuleStatusControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UBSModuleStatusForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\UBSModuleStatusForm.Designer.cs">
+      <DependentUpon>UBSModuleStatusForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Managers\CommunicationManager\CommunicationManager.cs" />
+    <Compile Include="Managers\ConfigManager\AppConfigLoader.cs" />
+    <Compile Include="Managers\ConfigManager\GlobalConfigManager.cs" />
+    <Compile Include="Managers\ConfigManager\AppConfig.cs" />
+    <Compile Include="Managers\ModuleManager\Assembly.cs" />
+    <Compile Include="Managers\ModuleManager\UBSModuleManager.cs" />
+    <Compile Include="UBSAppComponent.cs" />
+    <Compile Include="Writers\UBSExecutionTimeLogger.cs" />
+    <Compile Include="Writers\UBSConsoleLogger.cs" />
+    <Compile Include="Writers\UBSLogger.cs" />
     <Compile Include="Carga\Carga.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -67,11 +96,22 @@
       <DependentUpon>Carga.cs</DependentUpon>
     </Compile>
     <Compile Include="Carga\UBSCarga.cs" />
+    <Compile Include="Auxiliars\FileWriter.cs" />
+    <Compile Include="UBSAppComponentFunctions.cs" />
     <Compile Include="UBSApp.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Carga\Carga.resx">
       <DependentUpon>Carga.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UBSFormContainer.resx">
+      <DependentUpon>UBSFormContainer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UBSModuleStatusControl.resx">
+      <DependentUpon>UBSModuleStatusControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UBSModuleStatusForm.resx">
+      <DependentUpon>UBSModuleStatusForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -107,5 +147,12 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UBSLib\UBSLib.csproj">
+      <Project>{83ef651e-19fa-40f7-ac94-a76e78476832}</Project>
+      <Name>UBSLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
