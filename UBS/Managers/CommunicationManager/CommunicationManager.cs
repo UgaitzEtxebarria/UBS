@@ -4,7 +4,7 @@ using UBSApp.Managers.ConfigManager;
 
 namespace UBSApp.Managers.CommunicationManager
 {
-    public class CommunicationManager : UBSAppFunctions
+    public class CommunicationManager : UBSAppComponent
     {
         ///////////////////////////////////////////////////////////
         private AppConfig current_config;
