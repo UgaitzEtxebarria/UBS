@@ -7,6 +7,8 @@ using UBSApp.Forms;
 using UBSApp.Managers.ModuleManager;
 using UBSApp.Managers.ConfigManager;
 using UBSLib;
+using UBSApp.Carga;
+using UBS.Auxiliars;
 
 namespace UBSApp
 {
@@ -23,8 +25,17 @@ namespace UBSApp
         ///////////////////////////////////////////////////////////
         public UBSApp(DateTime fechaInicio) : base("root")
         {
+            //Buscar actualizacion
+            UBSCarga.Progress = Convert.ToInt32(100);
+            UBSCarga.Status = "Buscando actualizaciones";
+
+            Updater.InstallUpdate();
+            Updater.FindUpdate();
+            
+
             // Init Global config manager
             GlobalConfigManager.Init();
+
 
             //Cargar el modo debug
             try

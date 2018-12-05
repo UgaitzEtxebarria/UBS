@@ -24,7 +24,7 @@ namespace UBSApp
             if (!isModal)
             {
                 Thread notifyThread = new Thread(() => AuxNotify(id, message, writeInLog));
-                notifyThread.Name = "CSRNotifyThread";
+                notifyThread.Name = "UBSNotifyThread";
                 notifyThread.IsBackground = true;
                 notifyThread.Start();
             }
@@ -47,7 +47,7 @@ namespace UBSApp
             if (!isModal)
             {
                 Thread ErrorThread = new Thread(() => AuxError(id, message, writeInLog));
-                ErrorThread.Name = "CSRErrorThread";
+                ErrorThread.Name = "UBSErrorThread";
                 ErrorThread.IsBackground = true;
                 ErrorThread.Start();
             }
