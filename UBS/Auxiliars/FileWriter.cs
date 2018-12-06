@@ -54,8 +54,9 @@ namespace UBSApp.Auxiliars
                 Filename = _filename;
             if (_debug)
                 Filename = Path.GetFileNameWithoutExtension(Filename) + " (" + DateTime.Now.ToString().Replace('/', '-').Replace(':', '.') + ")" + Path.GetExtension(Filename);
-            if (!Directory.GetDirectories("./").Contains("Logs"))
-                Directory.CreateDirectory("./Logs");
+
+            if (Directory.GetDirectories(Path.GetDirectoryName(Application.ExecutablePath), "Logs").Length == 0)
+                Directory.CreateDirectory(Path.GetDirectoryName(Application.ExecutablePath) + "/Logs");
 
             Filename = "Logs/" + Filename;
 
