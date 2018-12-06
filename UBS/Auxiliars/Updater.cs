@@ -2,6 +2,7 @@
 using SharpCompress.Archives.Rar;
 using SharpCompress.Common;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -41,50 +42,62 @@ namespace UBS.Auxiliars
 
         static public void FindUpdate()
         {
+            IEnumerable<string> rars = Enumerable.Empty<string>(); ;
 
-            foreach (DriveInfo drive in DriveInfo.GetDrives())
+            switch (Environment.OSVersion.Platform)
             {
-                if (drive.DriveType == DriveType.Removable)
-                {
-                    foreach (string rarFile in Directory.EnumerateFiles(drive.RootDirectory.ToString(), "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".rar")))
+                case PlatformID.Unix:
+                    rars = Directory.EnumerateFiles("/media", "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".rar"));
+                    break;
+
+                default:
+                    foreach (DriveInfo drive in DriveInfo.GetDrives())
                     {
-                        //Extraer
-                        using (var archive = RarArchive.Open(rarFile))
+                        if (drive.DriveType == DriveType.Removable)
+                            rars = Directory.EnumerateFiles(drive.RootDirectory.ToString(), "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".rar"));
+                    }
+                    break;
+            }
+
+            //Extraer informacion del Rar para comprobar la version
+            foreach (string rarFile in rars)
+            {
+                using (var archive = RarArchive.Open(rarFile))
+                {
+                    foreach (var exeFiles in archive.Entries.Where(entry => entry.Key == "UBS.exe"))
+                    {
+                        string tempPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\temp";
+                        Directory.CreateDirectory(tempPath);
+                        exeFiles.WriteToDirectory(tempPath, new ExtractionOptions()
                         {
-                            foreach (var exeFiles in archive.Entries.Where(entry => entry.Key == "UBS.exe"))
+                            ExtractFullPath = true,
+                            Overwrite = true
+                        });
+                        Version newVersion = new Version(FileVersionInfo.GetVersionInfo(tempPath + "\\" + exeFiles.Key).ProductVersion);
+                        Version actualVersion = new Version(Application.ProductVersion);
+
+                        Directory.Delete(tempPath, true);
+
+                        if (newVersion.CompareTo(actualVersion) > 0)
+                        {
+                            string newVersionFolder = Path.GetDirectoryName(Application.ExecutablePath) + "\\NewVersion";
+                            Directory.CreateDirectory(newVersionFolder);
+                            foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                             {
-                                exeFiles.WriteToDirectory(drive.RootDirectory.ToString(), new ExtractionOptions()
+                                entry.WriteToDirectory(newVersionFolder, new ExtractionOptions()
                                 {
                                     ExtractFullPath = true,
                                     Overwrite = true
                                 });
-                                Version newVersion = new Version(FileVersionInfo.GetVersionInfo(drive.RootDirectory + exeFiles.Key).ProductVersion);
-                                Version actualVersion = new Version(Application.ProductVersion);
-
-                                File.Delete(drive.RootDirectory + exeFiles.Key);
-
-                                if (newVersion.CompareTo(actualVersion) > 0)
-                                {
-                                    string newVersionFolder = Path.GetDirectoryName(Application.ExecutablePath) + "\\NewVersion";
-                                    Directory.CreateDirectory(newVersionFolder);
-                                    foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
-                                    {
-                                        entry.WriteToDirectory(newVersionFolder, new ExtractionOptions()
-                                        {
-                                            ExtractFullPath = true,
-                                            Overwrite = true
-                                        });
-                                    }
-
-                                    Process.Start(newVersionFolder + "\\UBS.exe");
-
-                                    CloseApp();
-                                }
                             }
+
+                            Process.Start(newVersionFolder + "\\UBS.exe");
+
+                            CloseApp();
                         }
                     }
                 }
-            }
+            } 
         }
 
         private static void CloseApp()
