@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using UBS.Auxiliars;
 
 namespace UBSApp.Forms
 {
@@ -57,7 +58,7 @@ namespace UBSApp.Forms
                         txtConsole.Invoke(new WriteConsoleDelegate(WriteConsole), new object[] { id, message });  // invoking itself
                     else
                     {
-                        string built_message = String.Format("[{0}]-[{1}]::{2}", DateTime.Now.ToString("HH:mm:ss.fff"), id, message);
+                        string built_message = string.Format("[{0}]-[{1}]::{2}", DateTime.Now.ToString("HH:mm:ss.fff"), id, message);
                         if (IsDisposed)
                             return;
                         Size ConsoleSize = txtConsole.Size;
@@ -66,7 +67,7 @@ namespace UBSApp.Forms
                         if (txtConsole.Text == "")
                             completeText = built_message;
                         else
-                            completeText = String.Format("{0}" + System.Environment.NewLine + "{1}", built_message, txtConsole.Text);
+                            completeText = string.Format("{0}" + Environment.NewLine + "{1}", built_message, txtConsole.Text);
 
                         int visibleChars = 0;
                         int visibleLines = 0;
@@ -105,6 +106,24 @@ namespace UBSApp.Forms
                 MessageBox.Show("Error interno del UBS. WriteConsole bloqueado. " + e.Message + " -> linea " + line);
             }
         }
+
         ///////////////////////////////////////////////////////////
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                WriteConsole("Updater", "No hay actualizaciones");
+                Updater.FindUpdate();
+            }
+            catch (Exception ex)
+            {
+                StackTrace sTrace = new StackTrace(ex, true);
+                StackFrame sFrame = sTrace.GetFrame(sTrace.FrameCount - 1);
+                int line = sFrame.GetFileLineNumber();
+                MessageBox.Show("Error interno del UBS. Error al actualizar. " + ex.Message + " -> linea " + line);
+            }
+            ///////////////////////////////////////////////////////////
+        }
     }
 }

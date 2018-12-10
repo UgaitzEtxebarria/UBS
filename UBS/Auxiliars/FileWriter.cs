@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -56,10 +55,9 @@ namespace UBSApp.Auxiliars
                 Filename = Path.GetFileNameWithoutExtension(Filename) + " (" + DateTime.Now.ToString().Replace('/', '-').Replace(':', '.') + ")" + Path.GetExtension(Filename);
 
             if (Directory.GetDirectories(Path.GetDirectoryName(Application.ExecutablePath), "Logs").Length == 0)
-                Directory.CreateDirectory(Path.GetDirectoryName(Application.ExecutablePath) + "/Logs");
-
-            Filename = "Logs/" + Filename;
-
+                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Logs"));
+            
+            Filename = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), Path.Combine("Logs", Filename));
             FileStream fs = File.Open(Filename, FileMode.Create, FileAccess.ReadWrite);
             StreamWriter sw = new StreamWriter(fs);
 

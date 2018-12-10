@@ -18,24 +18,25 @@ namespace UBS.Auxiliars
             {
                 if (Application.StartupPath.EndsWith("NewVersion"))
                 {
+                    File.WriteAllText(Path.Combine(Application.StartupPath, DateTime.Now.Ticks + ".txt"), "Laura sigues atenta?");
                     DirectoryInfo parentDirectory = Directory.GetParent(Application.StartupPath);
                     
                     foreach (string newFiles in Directory.GetFiles(Application.StartupPath))
-                        File.Copy(newFiles, parentDirectory + "\\" + Path.GetFileName(newFiles), true);
+                        File.Copy(newFiles, Path.Combine(parentDirectory.ToString(), Path.GetFileName(newFiles)), true);
                     
-                    Process.Start(parentDirectory + "\\UBS.exe");
+                    Process.Start(Path.Combine(parentDirectory.ToString(), "UBS.exe"));
 
                     CloseApp();
                 }
                 else
                 {
-                    if (Directory.Exists(Application.StartupPath + "\\NewVersion"))
-                        Directory.Delete(Application.StartupPath + "\\NewVersion", true);
+                    if (Directory.Exists(Path.Combine(Application.StartupPath, "NewVersion")))
+                        Directory.Delete(Path.Combine(Application.StartupPath, "NewVersion"), true);
                 }
             }
             catch (Exception e)
             {
-                File.WriteAllText("E:\\" + DateTime.Now.Ticks + ".txt", "Error " + e.Message);
+                File.WriteAllText(Path.GetDirectoryName(Application.ExecutablePath) + "\\Error " + DateTime.Now.Ticks + ".txt", "Error " + e.Message);
             }
         }
 
@@ -66,21 +67,21 @@ namespace UBS.Auxiliars
                 {
                     foreach (var exeFiles in archive.Entries.Where(entry => entry.Key == "UBS.exe"))
                     {
-                        string tempPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\temp";
+                        string tempPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "temp");
                         Directory.CreateDirectory(tempPath);
                         exeFiles.WriteToDirectory(tempPath, new ExtractionOptions()
                         {
                             ExtractFullPath = true,
                             Overwrite = true
                         });
-                        Version newVersion = new Version(FileVersionInfo.GetVersionInfo(tempPath + "\\" + exeFiles.Key).ProductVersion);
+                        Version newVersion = new Version(FileVersionInfo.GetVersionInfo(Path.Combine(tempPath, exeFiles.Key)).ProductVersion);
                         Version actualVersion = new Version(Application.ProductVersion);
 
                         Directory.Delete(tempPath, true);
 
                         if (newVersion.CompareTo(actualVersion) > 0)
                         {
-                            string newVersionFolder = Path.GetDirectoryName(Application.ExecutablePath) + "\\NewVersion";
+                            string newVersionFolder = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "NewVersion");
                             Directory.CreateDirectory(newVersionFolder);
                             foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                             {
@@ -90,9 +91,9 @@ namespace UBS.Auxiliars
                                     Overwrite = true
                                 });
                             }
-
-                            Process.Start(newVersionFolder + "\\UBS.exe");
-
+                            File.WriteAllText(Path.Combine(Application.StartupPath, DateTime.Now.Ticks + ".txt"), "Ejecutando " + Path.Combine(newVersionFolder, "UBS.exe"));
+                            Process.Start(Path.Combine(newVersionFolder, "UBS.exe"));
+                            File.WriteAllText(Path.Combine(Application.StartupPath, DateTime.Now.Ticks + ".txt"), "Cerrando");
                             CloseApp();
                         }
                     }

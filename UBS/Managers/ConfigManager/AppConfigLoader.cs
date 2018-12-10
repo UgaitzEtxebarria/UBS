@@ -23,7 +23,7 @@ namespace UBSApp.Managers.ConfigManager
         {
             try
             {
-                FileStream filestream = new FileStream(m_filename, FileMode.Open);
+                FileStream filestream = new FileStream(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), m_filename), FileMode.Open);
                 _config = (AppConfig)xml_serializer.ReadObject(filestream);
                 filestream.Close();
 
@@ -33,12 +33,12 @@ namespace UBSApp.Managers.ConfigManager
             {
                 if (e.HResult == -2147024894) //File not found
                 {
-                    MessageBox.Show("No se ha encontrado el fichero de configuración del UBSApp. Creando fichero vacío en \"" + Path.GetDirectoryName(Application.ExecutablePath) + "\\" + m_filename + "\"", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("No se ha encontrado el fichero de configuración del UBSApp. Creando fichero vacío en \"" + Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), m_filename) + "\"", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                     CreateConfigDummy();
                 }
                 else
-                    MessageBox.Show("Error al abrir el fichero de configuración del UBSApp \"" + Path.GetDirectoryName(Application.ExecutablePath) + "\\" + m_filename + "\". " + e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Error al abrir el fichero de configuración del UBSApp \"" + Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), m_filename) + "\". " + e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _config = null;
                 return false;
             }

@@ -90,12 +90,12 @@ namespace UBSApp
             #endregion
 
             //Save dummy Config
-            /*app_config = new config.AppConfig();
+            /*app_config = new AppConfig();
             app_config.isMinimized = false;
             app_config.AppName = "UBS Dummy";
             app_config.AppSize = new System.Drawing.Size(600, 800);
-            System.Collections.Generic.Dictionary<string, config.ModuleInfo> aux = new System.Collections.Generic.Dictionary<string, config.ModuleInfo>();
-            config.ModuleInfoLocal mi = new config.ModuleInfoLocal();
+            System.Collections.Generic.Dictionary<string, ModuleInfo> aux = new System.Collections.Generic.Dictionary<string, ModuleInfo>();
+            ModuleInfoLocal mi = new ModuleInfoLocal();
             mi.Id = "LocMod";
             mi.Name = "LocalModule";
             mi.Filename = "LocMod.dll";
@@ -103,7 +103,7 @@ namespace UBSApp
             aux.Add(mi.Id, mi);
             mi.Id += 1;
             aux.Add(mi.Id + 1, mi);
-            config.ModuleInfoRemote miRemoto = new config.ModuleInfoRemote();
+            ModuleInfoRemote miRemoto = new ModuleInfoRemote();
             miRemoto.Id = "RemMod";
             miRemoto.Name = "RemoteModule";
             miRemoto.Filename = "RemMod.dll";
