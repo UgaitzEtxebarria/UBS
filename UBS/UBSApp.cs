@@ -272,7 +272,8 @@ namespace UBSApp
 
             Log("Todos los módulos cerrados correctamente.");
 
-            UBSExecutionTimeLogger.Instance.Close();
+			if (Convert.ToBoolean(GlobalConfigManager.GetParameter("Debug")))
+				UBSExecutionTimeLogger.Instance.Close();
             UBSLogger.Instance.Close();
 
             return true;
